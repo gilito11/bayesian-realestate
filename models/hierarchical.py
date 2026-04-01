@@ -93,12 +93,19 @@ class HierarchicalPricingModel:
 
     def sample_nuts(self, draws=2000, tune=1000, chains=4, cores=1, seed=42) -> az.InferenceData:
         t0 = time.perf_counter()
-        with self.model:
-            self.trace = pm.sample(
-                draws=draws, tune=tune, chains=chains, cores=cores,
-                random_seed=seed, return_inferencedata=True,
-                progressbar=True,
+        try:
+            import nutpie
+            compiled = nutpie.compile_pymc_model(self.model)
+            self.trace = nutpie.sample(
+                compiled, draws=draws, tune=tune, chains=chains, seed=seed,
             )
+        except ImportError:
+            with self.model:
+                self.trace = pm.sample(
+                    draws=draws, tune=tune, chains=chains, cores=cores,
+                    random_seed=seed, return_inferencedata=True,
+                    progressbar=True,
+                )
         self.nuts_time = time.perf_counter() - t0
         return self.trace
 
