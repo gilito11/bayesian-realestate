@@ -2,7 +2,8 @@ __pycache__/
 *.pyc
 .env
 output/
-*.png
+# Allow docs images
+!docs/img/*.png
 .pytensor/
 *.egg-info/
 dist/
