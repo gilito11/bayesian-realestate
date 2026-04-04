@@ -6,3 +6,4 @@ matplotlib>=3.7
 seaborn>=0.13
 scikit-learn>=1.3
 psycopg2-binary>=2.9
+nutpie>=0.12

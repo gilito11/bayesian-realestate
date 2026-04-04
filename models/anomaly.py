@@ -9,19 +9,19 @@ distribution as a two-component mixture:
   Component 2 (Anomaly):        wide distribution capturing outliers
 
 The posterior probability of belonging to the anomaly component gives
-a principled, calibrated anomaly score for each listing — unlike
+a principled, calibrated anomaly score for each listing - unlike
 threshold-based methods, this accounts for parameter uncertainty.
 
 Mathematical formulation:
 
     Residual model (price after removing size/bedroom effects):
-        r_i = log(price_i) - (α + β_size · size_i + β_beds · beds_i)
+        r_i = log(price_i) - (alpha + beta_size * size_i + beta_beds * beds_i)
 
     Mixture model on residuals:
         w ~ Dirichlet([10, 1])              # prior favors normal component
         z_i ~ Categorical(w)                # latent assignment
-        r_i | z_i=0 ~ Normal(μ₁, σ₁)       # normal market
-        r_i | z_i=1 ~ Normal(μ₂, σ₂)       # anomaly (σ₂ >> σ₁)
+        r_i | z_i=0 ~ Normal(mu_1, sigma_1)       # normal market
+        r_i | z_i=1 ~ Normal(mu_2, sigma_2)       # anomaly (sigma_2 >> sigma_1)
 """
 
 import time

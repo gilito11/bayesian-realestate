@@ -3,10 +3,10 @@ Gaussian Process Spatial Price Model
 =====================================
 
 Models real estate prices as a smooth function of geographic coordinates
-using a Gaussian Process with a Matérn-5/2 covariance kernel.
+using a Gaussian Process with a Matern-5/2 covariance kernel.
 
-This captures spatial price patterns — proximity to coastline, city centers,
-transport — without explicitly encoding those features. The GP learns the
+This captures spatial price patterns - proximity to coastline, city centers,
+transport - without explicitly encoding those features. The GP learns the
 spatial structure from data alone, producing:
 
   1. A continuous price surface over the geographic region
@@ -16,9 +16,9 @@ spatial structure from data alone, producing:
 Mathematical formulation:
 
     f ~ GP(0, k(x, x'))
-    k(x, x') = η² · Matérn₅/₂(|x - x'| / ℓ)
+    k(x, x') = eta^2 * Matern_5/2(|x - x'| / l)
 
-    y_i ~ Normal(f(x_i) + X_i · β, σ)
+    y_i ~ Normal(f(x_i) + X_i * beta, sigma)
 
 where x_i = (lat, lon) and X_i are property features.
 """
@@ -34,7 +34,7 @@ class SpatialGPModel:
     """GP regression for spatial price surfaces with uncertainty."""
 
     def __init__(self, df: pd.DataFrame, max_points: int = 300):
-        # GP scales as O(n³), so we subsample for tractability
+        # GP scales as O(n^3), so we subsample for tractability
         if len(df) > max_points:
             self.df = df.sample(n=max_points, random_state=42).reset_index(drop=True)
             self.subsampled = True
@@ -65,7 +65,7 @@ class SpatialGPModel:
             lengthscale = pm.Gamma("lengthscale", alpha=2, beta=2)
             amplitude = pm.HalfNormal("amplitude", sigma=2)
 
-            # Matérn-5/2 covariance (smoother than 3/2, more flexible than RBF)
+            # Matern-5/2 covariance (smoother than 3/2, more flexible than RBF)
             cov = amplitude**2 * pm.gp.cov.Matern52(input_dim=2, ls=lengthscale)
             self.gp = pm.gp.Marginal(cov_func=cov)
 

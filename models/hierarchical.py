@@ -12,15 +12,15 @@ while portals with enough data can diverge from the group mean.
 Mathematical formulation:
 
     Group level:
-        μ_α ~ Normal(0, 10)        σ_α ~ HalfNormal(5)
-        μ_β ~ Normal(0, 5)         σ_β ~ HalfNormal(3)
+        mu_alpha ~ Normal(0, 10)        sigma_alpha ~ HalfNormal(5)
+        mu_beta ~ Normal(0, 5)         sigma_beta ~ HalfNormal(3)
 
     Portal level (j = 1..J):
-        α_j ~ Normal(μ_α, σ_α)
-        β_j ~ Normal(μ_β, σ_β)     [vector for each feature]
+        alpha_j ~ Normal(mu_alpha, sigma_alpha)
+        beta_j ~ Normal(mu_beta, sigma_beta)     [vector for each feature]
 
     Observation level (i = 1..N):
-        y_i ~ Normal(α_{j[i]} + X_i · β_{j[i]}, σ)
+        y_i ~ Normal(alpha_{j[i]} + X_i . beta_{j[i]}, sigma)
 """
 
 import time

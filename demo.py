@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Bayesian Real Estate Intelligence — Full Demo
+Bayesian Real Estate Intelligence - Full Demo
 ==============================================
 
 Runs all three probabilistic models on real estate data,
@@ -124,7 +124,7 @@ def run_spatial(df: pd.DataFrame, quick: bool = False) -> SpatialGPModel:
 
     draws = 500 if quick else 1000
     print(f"\n  Sampling NUTS ({draws} draws, 2 chains, n={len(model.df)})...")
-    print("  (GP models are O(n³) — this is the tractability bottleneck)")
+    print("  (GP models are O(n^3) - this is the tractability bottleneck)")
     model.sample_nuts(draws=draws)
     print(f"  NUTS completed in {model.nuts_time:.1f}s")
 
@@ -183,7 +183,7 @@ def generate_plots(models: dict, df: pd.DataFrame, output_dir: str):
         plot_posterior_comparison(
             m.trace,
             var_names=["mu_alpha", "mu_beta_size", "sigma"],
-            title="Hierarchical Model — Group-Level Posteriors",
+            title="Hierarchical Model - Group-Level Posteriors",
             save_path=f"{output_dir}/hierarchical_posteriors.png",
         )
         print("  Saved: shrinkage.png, hierarchical_posteriors.png")
@@ -242,7 +242,7 @@ def main():
 
     elapsed = time.perf_counter() - t_total
     print(f"\n{'=' * 60}")
-    print(f" COMPLETE — Total time: {elapsed:.1f}s")
+    print(f" COMPLETE - Total time: {elapsed:.1f}s")
     print(f" Plots saved to: {args.output_dir}/")
     print(f"{'=' * 60}")
 
