@@ -31,6 +31,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pymc")
 from data import generate_synthetic, load_from_neon, preprocess
 from models import HierarchicalPricingModel, SpatialGPModel, AnomalyMixtureModel
 from diagnostics import print_diagnostics_report
+from sensitivity import run_sensitivity, sensitivity_summary, sensitivity_divergence, plot_sensitivity
 from plots import (
     plot_shrinkage,
     plot_posterior_comparison,
@@ -61,6 +62,7 @@ def parse_args():
     parser.add_argument("--n-listings", type=int, default=800)
     parser.add_argument("--no-spatial", action="store_true", help="Skip GP model")
     parser.add_argument("--quick", action="store_true", help="Fewer samples for speed")
+    parser.add_argument("--sensitivity", action="store_true", help="Run prior sensitivity analysis")
     parser.add_argument("--output-dir", default="output", help="Directory for plots")
     return parser.parse_args()
 
@@ -251,6 +253,29 @@ def main():
         print("\n  [Skipping spatial GP model (--no-spatial)]")
 
     models["anomaly"] = run_anomaly(df, quick=args.quick)
+
+    # --- Prior Sensitivity ---
+    if args.sensitivity:
+        print("\n" + "=" * 60)
+        print(" PRIOR SENSITIVITY ANALYSIS")
+        print("=" * 60)
+        print("  Testing robustness across 3 prior specifications...")
+
+        sens_draws = 500 if args.quick else 1000
+        sens_results = run_sensitivity(df, draws=sens_draws, tune=500, chains=2)
+
+        print("\n  Posterior comparison across priors:")
+        summary = sensitivity_summary(sens_results)
+        print(summary.to_string(index=False))
+
+        divergence = sensitivity_divergence(sens_results)
+        print("\n  Max posterior divergence (smaller = more robust):")
+        for var, div in divergence.items():
+            status = "ROBUST" if div < 0.1 else "SENSITIVE"
+            print(f"    {var}: {div:.4f} [{status}]")
+
+        plot_sensitivity(sens_results, save_path=f"{args.output_dir}/sensitivity.png")
+        print(f"\n  Saved: sensitivity.png")
 
     # --- Diagnostics ---
     traces = {}
