@@ -32,6 +32,7 @@ from data import generate_synthetic, load_from_neon, preprocess
 from models import HierarchicalPricingModel, SpatialGPModel, AnomalyMixtureModel
 from diagnostics import print_diagnostics_report
 from sensitivity import run_sensitivity, sensitivity_summary, sensitivity_divergence, plot_sensitivity
+from validation import run_validation, plot_predictions
 from plots import (
     plot_shrinkage,
     plot_posterior_comparison,
@@ -63,6 +64,7 @@ def parse_args():
     parser.add_argument("--no-spatial", action="store_true", help="Skip GP model")
     parser.add_argument("--quick", action="store_true", help="Fewer samples for speed")
     parser.add_argument("--sensitivity", action="store_true", help="Run prior sensitivity analysis")
+    parser.add_argument("--validate", action="store_true", help="Run train/test predictive validation")
     parser.add_argument("--output-dir", default="output", help="Directory for plots")
     return parser.parse_args()
 
@@ -253,6 +255,15 @@ def main():
         print("\n  [Skipping spatial GP model (--no-spatial)]")
 
     models["anomaly"] = run_anomaly(df, quick=args.quick)
+
+    # --- Out-of-sample Validation ---
+    if args.validate:
+        print("\n" + "=" * 60)
+        print(" OUT-OF-SAMPLE VALIDATION")
+        print("=" * 60)
+        val_result = run_validation(df, quick=args.quick)
+        plot_predictions(val_result, save_path=f"{args.output_dir}/validation.png")
+        print(f"  Saved: validation.png")
 
     # --- Prior Sensitivity ---
     if args.sensitivity:
