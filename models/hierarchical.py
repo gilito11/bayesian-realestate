@@ -132,6 +132,38 @@ class HierarchicalPricingModel:
             })
         return pd.DataFrame(rows)
 
+    def posterior_predictive_check(self, seed=42) -> az.InferenceData:
+        """Generate posterior predictive samples for model validation.
+
+        Simulates new data from the fitted model and stores it in the trace
+        for comparison against observed values using ArviZ PPC plots.
+        """
+        with self.model:
+            pm.sample_posterior_predictive(
+                self.trace, random_seed=seed, extend_inferencedata=True,
+            )
+        return self.trace
+
+    def ppc_summary(self) -> dict:
+        """Compute PPC calibration metrics: coverage and mean residual."""
+        pp = self.trace.posterior_predictive["likelihood"]
+        observed = self.trace.observed_data["likelihood"].values
+
+        pp_flat = pp.values.reshape(-1, len(observed))
+        pp_mean = pp_flat.mean(axis=0)
+        pp_lower = np.percentile(pp_flat, 3, axis=0)
+        pp_upper = np.percentile(pp_flat, 97, axis=0)
+
+        coverage = np.mean((observed >= pp_lower) & (observed <= pp_upper))
+        mean_residual = np.mean(np.abs(observed - pp_mean))
+
+        return {
+            "coverage_94pct": round(float(coverage), 3),
+            "mean_abs_residual": round(float(mean_residual), 4),
+            "pp_mean_std": round(float(pp_mean.std()), 4),
+            "observed_std": round(float(observed.std()), 4),
+        }
+
     def summary(self) -> str:
         return az.summary(self.trace, var_names=[
             "mu_alpha", "sigma_alpha",

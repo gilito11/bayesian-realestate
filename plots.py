@@ -157,6 +157,30 @@ def plot_anomaly_scores(scores_df: pd.DataFrame, save_path: str = None):
     return fig
 
 
+def plot_ppc(trace: az.InferenceData, model_name: str = "", save_path: str = None):
+    """Posterior predictive check: overlay observed data with model-generated data."""
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    # 1. KDE overlay (observed vs predicted)
+    az.plot_ppc(trace, kind="kde", num_pp_samples=200, ax=axes[0],
+                colors=["#2196F3", "#E91E63", "#333333"])
+    axes[0].set_title(f"PPC Density Overlay — {model_name}")
+    axes[0].set_xlabel("Observed value (standardized)")
+
+    # 2. Cumulative distribution comparison
+    az.plot_ppc(trace, kind="cumulative", num_pp_samples=200, ax=axes[1],
+                colors=["#2196F3", "#E91E63", "#333333"])
+    axes[1].set_title(f"PPC Cumulative — {model_name}")
+    axes[1].set_xlabel("Observed value (standardized)")
+
+    fig.suptitle("Posterior Predictive Check: Can the model reproduce the data?",
+                 fontsize=13)
+    fig.tight_layout()
+    if save_path:
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
+    return fig, axes
+
+
 def plot_model_comparison_summary(models: dict, save_path: str = None):
     """Visual summary of model comparison and tractability."""
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))

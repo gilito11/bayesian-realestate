@@ -36,6 +36,7 @@ from plots import (
     plot_posterior_comparison,
     plot_spatial_surface,
     plot_anomaly_scores,
+    plot_ppc,
     plot_model_comparison_summary,
 )
 
@@ -110,6 +111,12 @@ def run_hierarchical(df: pd.DataFrame, quick: bool = False) -> HierarchicalPrici
     shrinkage = model.shrinkage_summary()
     print(shrinkage.to_string(index=False))
 
+    print("\n  Running posterior predictive check...")
+    model.posterior_predictive_check()
+    ppc = model.ppc_summary()
+    print(f"    94% interval coverage: {ppc['coverage_94pct']:.1%}")
+    print(f"    Mean absolute residual: {ppc['mean_abs_residual']:.4f}")
+
     return model
 
 
@@ -167,6 +174,12 @@ def run_anomaly(df: pd.DataFrame, quick: bool = False) -> AnomalyMixtureModel:
     print("\n  Top 10 most anomalous listings:")
     print(scores.head(10).to_string(index=False))
 
+    print("\n  Running posterior predictive check...")
+    model.posterior_predictive_check()
+    ppc = model.ppc_summary()
+    print(f"    94% interval coverage: {ppc['coverage_94pct']:.1%}")
+    print(f"    Mean absolute residual: {ppc['mean_abs_residual']:.4f}")
+
     return model
 
 
@@ -186,7 +199,12 @@ def generate_plots(models: dict, df: pd.DataFrame, output_dir: str):
             title="Hierarchical Model - Group-Level Posteriors",
             save_path=f"{output_dir}/hierarchical_posteriors.png",
         )
-        print("  Saved: shrinkage.png, hierarchical_posteriors.png")
+        if hasattr(m.trace, "posterior_predictive"):
+            plot_ppc(m.trace, model_name="Hierarchical",
+                     save_path=f"{output_dir}/ppc_hierarchical.png")
+            print("  Saved: shrinkage.png, hierarchical_posteriors.png, ppc_hierarchical.png")
+        else:
+            print("  Saved: shrinkage.png, hierarchical_posteriors.png")
 
     if "spatial" in models:
         m = models["spatial"]
@@ -202,7 +220,12 @@ def generate_plots(models: dict, df: pd.DataFrame, output_dir: str):
         m = models["anomaly"]
         scores = m.anomaly_scores()
         plot_anomaly_scores(scores, save_path=f"{output_dir}/anomaly_scores.png")
-        print("  Saved: anomaly_scores.png")
+        if hasattr(m.trace, "posterior_predictive"):
+            plot_ppc(m.trace, model_name="Anomaly Mixture",
+                     save_path=f"{output_dir}/ppc_anomaly.png")
+            print("  Saved: anomaly_scores.png, ppc_anomaly.png")
+        else:
+            print("  Saved: anomaly_scores.png")
 
     plot_model_comparison_summary(models, save_path=f"{output_dir}/tractability.png")
     print("  Saved: tractability.png")
